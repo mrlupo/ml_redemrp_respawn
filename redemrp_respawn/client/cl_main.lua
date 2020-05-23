@@ -30,17 +30,13 @@ AddEventHandler("redemrp_respawn:revivepl", function()
 	DoScreenFadeOut(1000)
 	Wait(1000)
 	DoScreenFadeIn(1000)
-	isDead = false
-	timerCount = reviveWait
-	NetworkResurrectLocalPlayer(coords, true, true, false)
-	ClearTimecycleModifier()
-	ClearPedTasksImmediately(ply)
-	SetEntityVisible(ply, true)
-	NetworkSetFriendlyFireOption(true)
+				   
+	ResurrectPed(PlayerPedId(ply))
 
+	SetCamActive(gameplaycam, true)
+	DisplayHud(true)
+	DisplayRadar(true)
 
-	
-	TriggerEvent("redemrp_respawn:lupocamera", coords, lightning)
 	
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
@@ -53,9 +49,7 @@ AddEventHandler("redemrp_respawn:revivepl", function()
 		TriggerEvent("redemrp_skin:openCreator")
 		new_character = 0
 	else
-
-       TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
-		end)
+	
 	end
 end)
 
@@ -185,8 +179,11 @@ function SimpleRespawn2(lightning)
 	NetworkSetFriendlyFireOption(true)
 
 
+	SetCamActive(gameplaycam, true)
+	DisplayHud(true)
+	DisplayRadar(true)
 	
-	TriggerEvent("redemrp_respawn:lupocamera", coords, lightning)
+	--TriggerEvent("redemrp_respawn:lupocamera", coords, lightning)
 	
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
@@ -200,8 +197,8 @@ function SimpleRespawn2(lightning)
 		TriggerEvent("redemrp_skin:openCreator")
 		new_character = 0
 	else
-		TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
-		end)
+	--	TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
+		--end)
 	end
 end
 
@@ -405,8 +402,8 @@ end)
 
 function LoadClothes()
 	Citizen.CreateThread(function()
-		Citizen.Wait(5000)
-		TriggerServerEvent("redemrp_clothing:loadClothes", 1, function(cb)
-		end)
+		Citizen.Wait(3000)
+		--TriggerServerEvent("redemrp_clothing:loadClothes", 1, function(cb)
+		--end)
 	end)
 end

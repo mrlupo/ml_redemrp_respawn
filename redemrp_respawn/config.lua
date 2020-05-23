@@ -17,7 +17,7 @@ Config.UsingInventory = true -- If you are using RedEM-RP Inventory, set this to
 Config.UseSingleSpawn = true -- If you want to disable the use of RedEm-respawn multi spawn function and use a single spawn.
 Config.SingleSpawnUseLightning = false --Add a litle Lightning spark on player respawn
 Config.SaveCoords = true -- if you want to use auto Saved coords 
-Config.SaveDelay = 300000 --Delay between Db Coords Save (5 minutes default)
+Config.SaveDelay = 120000 --Delay between Db Coords Save (5 minutes default) changed to 2 minutes duck (database should handle it fine with multiple players)
                 
 Config.SingleFirstSpawn = {x=-798.67,y=-1208.77,z=43.55} -- Set the coords for the First ever spawnpoint.
 Config.SingleRespawnSpawn = {x=-799.06,y=-1203.41,z=44.19} -- Use Only if you are using single spawn.
