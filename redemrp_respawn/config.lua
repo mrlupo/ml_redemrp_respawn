@@ -1,8 +1,8 @@
 Config = {}
 
 Config.RespawnTime = 60000
-Config.LocaleDead = "You are injured!"
-Config.LocaleRevive = "You are dead. Use (E) to Revive or (R) to Respawn."
+Config.LocaleDead = "You are dying!"
+Config.LocaleRevive = "You are dead. (R) to Respawn."
 Config.LocaleTimer = "Respawning in 60 seconds"
 Config.Timecycle = "CrossLine01" --Set the timecycle effect for a death
 Config.TimecycleStrenght = 1.0
@@ -19,9 +19,9 @@ Config.SingleSpawnUseLightning = false --Add a litle Lightning spark on player r
 Config.SaveCoords = true -- if you want to use auto Saved coords 
 Config.SaveDelay = 120000 --Delay between Db Coords Save (5 minutes default) changed to 2 minutes duck (database should handle it fine with multiple players)
                 
-Config.SingleFirstSpawn = {x=-798.67,y=-1208.77,z=43.55} -- Set the coords for the First ever spawnpoint.
-Config.SingleRespawnSpawn = {x=-799.06,y=-1203.41,z=44.19} -- Use Only if you are using single spawn.
-Config.SingleSpawnHeading = 187.83 -- Heading of the single respawn point.
+Config.SingleFirstSpawn = {x=-170.72,y=636.30,z=113.08} -- Set the coords for the First ever spawnpoint.
+Config.SingleRespawnSpawn = {x=-173.03,y=638.60,z=113.08} -- Use Only if you are using single spawn.
+Config.SingleSpawnHeading = 65.6 -- Heading of the single respawn point.
 Config.SingleSpawnCam = {x=-799.06,y=-1203.41,z=900.76} --Changes the camera location when respawning
 Config.LightningCoords = {x=2743.46,y=-1265.6,z=99.26} -- Coords of the Lightning
 

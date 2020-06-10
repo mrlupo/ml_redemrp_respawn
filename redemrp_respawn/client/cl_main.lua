@@ -36,7 +36,8 @@ AddEventHandler("redemrp_respawn:revivepl", function()
 	SetCamActive(gameplaycam, true)
 	DisplayHud(true)
 	DisplayRadar(true)
-
+	
+	TriggerEvent("ml_needs:resetall")
 	
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
@@ -76,13 +77,13 @@ Citizen.CreateThread(function()
 			DrawTxt(Config.LocaleRevive, 0.50, 0.38, 1.0, 1.0, true, 161, 3, 0, 255, true)
 			end
 			
-            if IsControlJustReleased(0, 0xCEFD9220) then
-                if timerCount <= 0 then
+            --if IsControlJustReleased(0, 0xCEFD9220) then
+                --if timerCount <= 0 then
                    
-					SimpleRespawn2()
+				--	SimpleRespawn2()
 					
-                end	
-            elseif IsControlJustReleased(0, 0xE30CD707)  then
+               --end	
+            if IsControlJustReleased(0, 0xE30CD707)  then
                  if timerCount <= 0 then
 				
 					respawn()
@@ -124,10 +125,12 @@ function respawn()
 	Citizen.InvokeNative(0x0E3F4AF2D63491FB)
 	DisplayHud(true)
 	DisplayRadar(true)
+	
+	TriggerEvent("ml_needs:resetall")
+	
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
 	end
-	
 	
 	if Config.UsingClothes then
 		LoadClothes()
@@ -183,6 +186,7 @@ function SimpleRespawn2(lightning)
 	DisplayHud(true)
 	DisplayRadar(true)
 	
+	TriggerEvent("ml_needs:resetall")
 	--TriggerEvent("redemrp_respawn:lupocamera", coords, lightning)
 	
 	if Config.UsingInventory then
@@ -197,6 +201,7 @@ function SimpleRespawn2(lightning)
 		TriggerEvent("redemrp_skin:openCreator")
 		new_character = 0
 	else
+	
 	--	TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
 		--end)
 	end
@@ -220,10 +225,60 @@ AddEventHandler("redemrp_respawn:SaveFromAndToServer", function()
 	TriggerServerEvent("redemrp_respawn:SaveCoordsFromClient", coordss)
 end)
 
+RegisterNetEvent('redemrp_respawn:firstcam')
+AddEventHandler('redemrp_respawn:firstcam', function()
+	local ped = PlayerPedId()
+	local randomNCoords = math.random(3)
+	
+	--Wait(2000) 
+	
+	if randomNCoords == 1 then
+		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -171.57, 635.16, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
+		PointCamAtCoord(Cam2, -171.57, 635.16, 113.03)
+		print("cam 1")
+		
+	elseif randomNCoords == 2 then
+		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -170.72, 636.30, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
+		PointCamAtCoord(Cam2, -170.72, 636.30, 113.03)
+		
+		print("cam 2")
+		
+	elseif randomNCoords == 3 then
+		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -170.40, 637.06, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
+		PointCamAtCoord(Cam2, -170.40, 637.06, 113.03)
+	
+		print("cam 3")
+		
+	end
+end)
+
+RegisterNetEvent('redemrp_respawn:lupofirstspawn')
+AddEventHandler('redemrp_respawn:lupofirstspawn', function()
+	local ped = PlayerPedId()
+	local randomNCoords = math.random(3)
+	
+	--Wait(2000) 
+	
+	if randomNCoords == 1 then
+		SetEntityCoords(ped, -171.57, 635.16, 113.03)
+		print("lspawn 1")
+		
+	elseif randomNCoords == 2 then
+		SetEntityCoords(ped, -170.72, 636.30, 113.03)
+		print("lspawn 2")
+		
+	elseif randomNCoords == 3 then
+		SetEntityCoords(ped, -170.40, 637.06, 113.03)
+		print("lspawn 3")
+		
+	end
+end)
+
 RegisterNetEvent("redemrp_respawn:FirstSpawnClient")
 AddEventHandler("redemrp_respawn:FirstSpawnClient",function(coords)
 
 	local ply = PlayerId()
+
 	DoScreenFadeIn(500)
 	ShutdownLoadingScreen()
 	SetEntityVisible(ply, true)
@@ -239,8 +294,9 @@ AddEventHandler("redemrp_respawn:FirstSpawnClient",function(coords)
 		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z+6, 300.00,0.00,0.00, 100.00, false, 0)
 		PointCamAtCoord(Cam2, coords.x,coords.y,coords.z+3)
 	else 
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+6, 300.00,0.00,0.00, 100.00, false, 0)
-		PointCamAtCoord(Cam2, Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+3)
+		TriggerEvent("redemrp_respawn:firstcam")
+		--Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+6, 300.00,0.00,0.00, 100.00, false, 0)
+		--PointCamAtCoord(Cam2, Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+3)
 	end
 
 	SetCamActiveWithInterp(Cam2, Cam1, 5000, false, false)
@@ -269,7 +325,8 @@ AddEventHandler("redemrp_respawn:FirstSpawnClient",function(coords)
 		end)
 	end
 	if coords == nil then 
-		NetworkResurrectLocalPlayer(Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z)
+		TriggerEvent("redemrp_respawn:lupofirstspawn")
+		--NetworkResurrectLocalPlayer(Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z)
 	else
 		NetworkResurrectLocalPlayer(coords.x,coords.y,coords.z, Config.SingleSpawnHeading, true, true, false)
 	end
@@ -383,7 +440,11 @@ RegisterNUICallback('select', function(spawn, cb)
 	TriggerEvent('playerSpawned', spawn)
 	Citizen.InvokeNative(0xF808475FA571D823, true)
 	NetworkSetFriendlyFireOption(true)
-	TriggerEvent("redemrp_respawn:newcamera", coords)
+	
+	SetCamActive(gameplaycam, true)
+	DisplayHud(true)
+	DisplayRadar(true)
+	--TriggerEvent("redemrp_respawn:newcamera", coords)
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
 	else end

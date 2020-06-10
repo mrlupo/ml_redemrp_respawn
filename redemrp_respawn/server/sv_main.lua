@@ -121,7 +121,6 @@ AddEventHandler("redemrp:reviveplayer", function(source, id, cb)
 			else
 		
 				TriggerClientEvent('redemrp_respawn:revivepl', id)
-				
 				print("revived user: "..user.getName())
 				end
 			end)

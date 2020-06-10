@@ -3,6 +3,6 @@ CREATE TABLE `coords` (
 	`characterid` TINYINT(11) NOT NULL,
 	`coords` longtext NOT NULL,
 
-	PRIMARY KEY (`identifier`)
+	
 );
 
