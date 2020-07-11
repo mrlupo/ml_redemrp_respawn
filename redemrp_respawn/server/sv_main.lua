@@ -1,100 +1,33 @@
-RegisterServerEvent("redemrp_respawn:SaveCoordsFromClient")
-AddEventHandler("redemrp_respawn:SaveCoordsFromClient", function(coords) 
-    local _source = source
+local playerCoords = {}
 
-    TriggerEvent('redemrp:getPlayerFromId', _source, function(user,data)
-        _id = user.getIdentifier()
-        charID = user.getSessionVar("charid")
-    end)
-    local exstCoords = CheckCoords(_id,charID)
-
-    if not exstCoords then
-        CreateCoords(_id,charID,coords)
-    else
-        UpdateCoords(_id,charID,coords)
-    end
-end)
-
-RegisterServerEvent("redemrp_respawn:FirstSpawn")
-AddEventHandler("redemrp_respawn:FirstSpawn",function()
-    local _source = source
-
-    TriggerEvent('redemrp:getPlayerFromId', _source, function(user,data)
-        _id = user.getIdentifier()
-        charID = user.getSessionVar("charid")
-    end)
-    GetCoords(_id,charID,_source)
-
-end)
-
-function GetCoords(_id,_characterID,_source)
-
-
-    MySQL.Async.fetchAll('SELECT * FROM coords WHERE identifier = @id AND characterid = @charid',
-    {
-        ['@id']   = _id,
-        ['@charid'] = _characterID,
-    },  function (result)
-        if result[1] then 
-            for k,v in ipairs(result) do
-                local kekw = json.decode(v.coords)
-                TriggerClientEvent("redemrp_respawn:FirstSpawnClient",_source,kekw)
+RegisterServerEvent("redemrp_respawn:CheckPos")
+AddEventHandler("redemrp_respawn:CheckPos", function()
+local _source = source
+    TriggerEvent('redemrp:getPlayerFromId', _source, function(user)
+        MySQL.Async.fetchAll('SELECT * FROM characters WHERE `identifier`=@identifier AND `characterid`=@charid;', {identifier = user.get('identifier'), charid = user.getSessionVar("charid")}, function(result)            
+            if(result[1].coords ~= "{}")then
+                TriggerClientEvent("redemrp_respawn:respawnCoords", _source, json.decode(result[1].coords))
             end
-        else
-            TriggerClientEvent("redemrp_respawn:FirstSpawnClient",_source)
-            TriggerClientEvent("redemrp_respawn:SaveFromAndToServer",_source,nil)
-        end
-
+        end)        
     end)
-    
-end
+end)
 
-function CheckCoords(_id,_characterID)
-    local kekCheck = nil
-    MySQL.Async.fetchAll('SELECT 1 FROM coords WHERE identifier = @id AND characterid = @charid',
-    {
-        ['@id']   = _id,
-        ['@charid'] = _characterID,
-    },  function (result)
-        if result[1] then
-            kekCheck = true
-        else
-            kekCheck = false
-        end
-    end)
-    while kekCheck == nil do 
-        Wait(500)
+RegisterServerEvent("redemrp_respawn:registerCoords")
+AddEventHandler("redemrp_respawn:registerCoords", function(coords)
+    playerCoords[source] = coords
+end)
+
+AddEventHandler("redemrp:playerDropped", function(player)
+    local coords = playerCoords[player.get('source')]
+    local characterId = player.getSessionVar("charid")
+    local identifier = player.get('identifier')
+
+    if coords then
+        MySQL.Async.execute('UPDATE characters SET `coords`=@coords WHERE `identifier`=@identifier AND `characterid`=@charid;', {coords = json.encode(coords), identifier = identifier, charid = characterId})
     end
-    return kekCheck
-end
+end)
 
-function UpdateCoords(_id,_characterID,coords)
-    local kekw = json.encode( {x = coords.x, y = coords.y, z = coords.z})
-    MySQL.Async.execute('UPDATE coords SET coords = @coords WHERE identifier = @id AND characterid = @charid', 
-    {   
-        ['@id']   = _id,
-        ['@charid'] = _characterID,
-        ['@coords']   = kekw,
-    },  function(OMEGAKEK)
-        if OMEGAKEK then 
-            print('Saving coords Succesfull') -- remove later
-        end
-    end)
-end
 
-function CreateCoords(_id,_characterID,coords)
-    local kekw = json.encode({x = coords.x, y = coords.y, z = coords.z})
-    MySQL.Async.execute('INSERT INTO coords (identifier, characterid, coords) VALUES (@id, @charid, @coords)',
-    {
-        ['@id']   = _id,
-        ['@charid'] = _characterID,
-        ['@coords']   = kekw,
-    },  function (LULW)
-        if LULW then
-            print('Coords Created succesfully')
-        end
-    end)
-end
 --lupo
 
 RegisterCommand("revive", function(source, args, rawCommand)
@@ -119,7 +52,8 @@ AddEventHandler("redemrp:reviveplayer", function(source, id, cb)
 				--TODO Temporary command Feeback	
 				print("Admin command Feedback: this user doesnt exist")
 			else
-		
+			
+				
 				TriggerClientEvent('redemrp_respawn:revivepl', id)
 				print("revived user: "..user.getName())
 				end

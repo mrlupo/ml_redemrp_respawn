@@ -1,7 +1,11 @@
-local firstspawn = true
 local new_character = 0
 local respawned = false
-local dsbl = true
+local alive = false
+local firstjoin = true
+local firstSpawn = false
+local pressed = false
+
+
 --lupo
 local reviveWait = 60 -- Change the amount of time to wait before allowing revive (in seconds)
 local isDead = false
@@ -9,52 +13,16 @@ local warned = false
 local timerCount = reviveWait
 
 
-
-
-RegisterCommand("die", function(source, args, rawCommand) -- KILL YOURSELF COMMAND
-local _source = source
-if Config.kysCommand then
-	local pl = Citizen.InvokeNative(0x217E9DC48139933D)
-    local ped = Citizen.InvokeNative(0x275F255ED201B937, pl)
+RegisterCommand("die1", function(source, args, rawCommand) -- KILL YOURSELF COMMAND
+	local _source = source
+	if Config.kysCommand then
+		local pl = Citizen.InvokeNative(0x217E9DC48139933D)
+    	local ped = Citizen.InvokeNative(0x275F255ED201B937, pl)
         Citizen.InvokeNative(0x697157CED63F18D4, ped, 500000, false, true, true)
-		else end
+	end
 end, false)
 
---lupo
-
-RegisterNetEvent("redemrp_respawn:revivepl")
-AddEventHandler("redemrp_respawn:revivepl", function()
-	local ply = PlayerPedId()
-	local coords = GetEntityCoords(ply)
-	
-	DoScreenFadeOut(1000)
-	Wait(1000)
-	DoScreenFadeIn(1000)
-				   
-	ResurrectPed(PlayerPedId(ply))
-
-	SetCamActive(gameplaycam, true)
-	DisplayHud(true)
-	DisplayRadar(true)
-	
-	TriggerEvent("ml_needs:resetall")
-	
-	if Config.UsingInventory then
-		TriggerServerEvent("player:getItems", source)
-	end
-	
-	if Config.UsingClothes then
-		LoadClothes()
-	end
-	if new_character == 1 then
-		TriggerEvent("redemrp_skin:openCreator")
-		new_character = 0
-	else
-	
-	end
-end)
-
---lupo
+-- ml lupo 
 Citizen.CreateThread(function()
 	local respawnCount = 0
 	local spawnPoints = {}
@@ -76,13 +44,7 @@ Citizen.CreateThread(function()
 			Citizen.InvokeNative(0x405224591DF02025, 0.50, 0.475, 1.0, 0.22, 1, 1, 1, 100, true, true)
 			DrawTxt(Config.LocaleRevive, 0.50, 0.38, 1.0, 1.0, true, 161, 3, 0, 255, true)
 			end
-			
-            --if IsControlJustReleased(0, 0xCEFD9220) then
-                --if timerCount <= 0 then
-                   
-				--	SimpleRespawn2()
-					
-               --end	
+				
             if IsControlJustReleased(0, 0xE30CD707)  then
                  if timerCount <= 0 then
 				
@@ -97,17 +59,6 @@ Citizen.CreateThread(function()
         end
     end
 end)
-
-Citizen.CreateThread(function()
-    while true do
-        if isDead then
-			timerCount = timerCount - 1
-        end
-        Citizen.Wait(1000)          
-    end
-end)
-
-
 
 function respawn()
 	SendNUIMessage({
@@ -126,7 +77,12 @@ function respawn()
 	DisplayHud(true)
 	DisplayRadar(true)
 	
+	Citizen.InvokeNative(0x50C803A4CD5932C5, true)
+    Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 0, 100)
+    Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 1, 100)
+	
 	TriggerEvent("ml_needs:resetall")
+	--TriggerEvent("initializeVoip")
 	
 	if Config.UsingInventory then
 		TriggerServerEvent("player:getItems", source)
@@ -143,280 +99,98 @@ function respawn()
 		TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
 		end)
 	end
+	
 end
 
-
-RegisterNetEvent("redemrp_respawn:respawn")
-AddEventHandler("redemrp_respawn:respawn", function(new1)
-	local new = new1
-	new_character = tonumber(new)
-	if Config.UseSingleSpawn then
-		DoScreenFadeOut(1000)
-		Wait(3000)
-		if firstspawn then 
-			TriggerServerEvent("redemrp_respawn:FirstSpawn")
-			DoScreenFadeIn(1000)
-		else
-			SimpleRespawn2()
-		end
-		CoordsSave()
-	else
-		respawn()
-	end
-end)
-
---mr lupo
-function SimpleRespawn2(lightning)
+RegisterNetEvent("redemrp_respawn:revivepl")
+AddEventHandler("redemrp_respawn:revivepl", function()
 	local ply = PlayerPedId()
 	local coords = GetEntityCoords(ply)
 	
 	DoScreenFadeOut(1000)
 	Wait(1000)
 	DoScreenFadeIn(1000)
-	isDead = false
-	timerCount = reviveWait
-	NetworkResurrectLocalPlayer(coords, true, true, false)
-	ClearTimecycleModifier()
-	ClearPedTasksImmediately(ply)
-	SetEntityVisible(ply, true)
-	NetworkSetFriendlyFireOption(true)
-
-
-	SetCamActive(gameplaycam, true)
-	DisplayHud(true)
-	DisplayRadar(true)
-	
+				   
+	ResurrectPed(PlayerPedId(ply))
 	TriggerEvent("ml_needs:resetall")
-	--TriggerEvent("redemrp_respawn:lupocamera", coords, lightning)
-	
-	if Config.UsingInventory then
-		TriggerServerEvent("player:getItems", source)
-	end
-
-	if Config.UsingClothes then
-		LoadClothes()
-	end
-	
-	if new_character == 1 then
-		TriggerEvent("redemrp_skin:openCreator")
-		new_character = 0
-	else
-	
-	--	TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
-		--end)
-	end
-end
-
-function CoordsSave()
-	Citizen.CreateThread(function()
-		while true do 
-			if Config.SaveCoords then
-				Wait(Config.SaveDelay)
-				local coordss = GetEntityCoords(PlayerPedId())
-				TriggerServerEvent("redemrp_respawn:SaveCoordsFromClient", coordss)
-			end
-		end
-	end)
-end
-
-RegisterNetEvent("redemrp_respawn:SaveFromAndToServer")
-AddEventHandler("redemrp_respawn:SaveFromAndToServer", function()
-	local coordss = GetEntityCoords(PlayerPedId())
-	TriggerServerEvent("redemrp_respawn:SaveCoordsFromClient", coordss)
-end)
-
-RegisterNetEvent('redemrp_respawn:firstcam')
-AddEventHandler('redemrp_respawn:firstcam', function()
-	local ped = PlayerPedId()
-	local randomNCoords = math.random(3)
-	
-	--Wait(2000) 
-	
-	if randomNCoords == 1 then
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -171.57, 635.16, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
-		PointCamAtCoord(Cam2, -171.57, 635.16, 113.03)
-		print("cam 1")
-		
-	elseif randomNCoords == 2 then
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -170.72, 636.30, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
-		PointCamAtCoord(Cam2, -170.72, 636.30, 113.03)
-		
-		print("cam 2")
-		
-	elseif randomNCoords == 3 then
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -170.40, 637.06, 113.03, 300.00,0.00,0.00, 100.00, false, 0)
-		PointCamAtCoord(Cam2, -170.40, 637.06, 113.03)
-	
-		print("cam 3")
-		
-	end
-end)
-
-RegisterNetEvent('redemrp_respawn:lupofirstspawn')
-AddEventHandler('redemrp_respawn:lupofirstspawn', function()
-	local ped = PlayerPedId()
-	local randomNCoords = math.random(3)
-	
-	--Wait(2000) 
-	
-	if randomNCoords == 1 then
-		SetEntityCoords(ped, -171.57, 635.16, 113.03)
-		print("lspawn 1")
-		
-	elseif randomNCoords == 2 then
-		SetEntityCoords(ped, -170.72, 636.30, 113.03)
-		print("lspawn 2")
-		
-	elseif randomNCoords == 3 then
-		SetEntityCoords(ped, -170.40, 637.06, 113.03)
-		print("lspawn 3")
-		
-	end
-end)
-
-RegisterNetEvent("redemrp_respawn:FirstSpawnClient")
-AddEventHandler("redemrp_respawn:FirstSpawnClient",function(coords)
-
-	local ply = PlayerId()
-
-	DoScreenFadeIn(500)
-	ShutdownLoadingScreen()
-	SetEntityVisible(ply, true)
-	NetworkSetFriendlyFireOption(true)
-	
-	Cam1 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", Config.SingleSpawnCam.x,Config.SingleSpawnCam.y,Config.SingleSpawnCam.z, 300.00,0.00,0.00, 100.00, false, 0) -- CAMERA COORDS
-	SetCamActive(Cam1, true)
-	RenderScriptCams(true, true, 1000, true, true)
-	Wait(1000)
-
-	if coords ~= nil then 
-		local _coords = {coords.x,coords.y,coords.z}
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z+6, 300.00,0.00,0.00, 100.00, false, 0)
-		PointCamAtCoord(Cam2, coords.x,coords.y,coords.z+3)
-	else 
-		TriggerEvent("redemrp_respawn:firstcam")
-		--Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+6, 300.00,0.00,0.00, 100.00, false, 0)
-		--PointCamAtCoord(Cam2, Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z+3)
-	end
-
-	SetCamActiveWithInterp(Cam2, Cam1, 5000, false, false)
-	Wait(5000)
-	
-	RenderScriptCams(false, true, 7000, true, true)
-	DestroyCam(Cam1, true)
-	DestroyCam(Cam2, true)
-	DisplayHud(true)
-	DisplayRadar(true)
-	
-	firstspawn = false
-	if Config.UsingInventory then
-		TriggerServerEvent("player:getItems", source)
-	end
-	
-	if Config.UsingClothes then
-		LoadClothes()
-	end
-	if new_character == 1 then
-		TriggerEvent("redemrp_skin:openCreator")
-		new_character = 0
-	else
-
-       TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
-		end)
-	end
-	if coords == nil then 
-		TriggerEvent("redemrp_respawn:lupofirstspawn")
-		--NetworkResurrectLocalPlayer(Config.SingleFirstSpawn.x,Config.SingleFirstSpawn.y,Config.SingleFirstSpawn.z)
-	else
-		NetworkResurrectLocalPlayer(coords.x,coords.y,coords.z, Config.SingleSpawnHeading, true, true, false)
-	end
-
-	TriggerEvent('playerSpawned',_coords)
-
-end)
-
-RegisterNetEvent('redemrp_respawn:newcamera')
-AddEventHandler('redemrp_respawn:newcamera', function(cord,light)
-	local coords = cord
-	
-	
-	if Config.UseSingleSpawn then
-		DoScreenFadeIn(6000)
-		Cam1 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z, 0.00,0.00,0.00, 0.00, false, 0)
-		--Cam1 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", Config.SingleSpawnCam.x,Config.SingleSpawnCam.y,Config.SingleSpawnCam.z, 300.00,0.00,0.00, 100.00, false, 0) -- CAMERA COORDS
-    	SetCamActive(Cam1, true)
-    	RenderScriptCams(true, true, 5000, true, true)
-		Wait(1000)
-		
-		Cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z, 0.00,0.00,0.00, 0.00, false, 0)
-		PointCamAtCoord(Cam2, coords.x,coords.y,coords.z+3)
-		SetCamActiveWithInterp(Cam2, Cam1, 10000, false, false)
-		Wait(2000)
-		if Config.SingleSpawnUseLightning and light then
-			Citizen.InvokeNative(0x67943537D179597C, Config.LightningCoords.x,Config.LightningCoords.y,Config.LightningCoords.z)
-		end
-		Wait(8000)
-		
-		RenderScriptCams(false, true, 2500, true, true)
-    	DestroyCam(Cam1, true)
-		DestroyCam(Cam2, true)
-		DisplayHud(true)
-		DisplayRadar(true)
-		Wait(5000)
-	
-	end
-	TriggerEvent("initializeVoip")
-end)
-
-RegisterNetEvent('redemrp_respawn:lupocamera')
-AddEventHandler('redemrp_respawn:lupocamera', function()
-	
-	if Config.UseSingleSpawn then
-	
-	DoScreenFadeOut(1000)
-	Wait(1000)
-	DoScreenFadeIn(1000)
-	gameplaycam = GetRenderingCam()
-	cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", -1850.33, -901.9, 147.78, 300.00,0.00,0.00, 100.00, false, 0)
-	DoesCamExist(cam)
-	SetCamCoord(cam, -1850.33, -901.9, 147.78)
-	PointCamAtCoord(cam, -1875.75, -912.91, 137.91)
-	RenderScriptCams(true, false, 1, true, true)
-	SetCamActive(cam, true)
-	--startdialog()
-	Wait(10000)
-	SetCamCoord(cam,GetGameplayCamCoord())
-	SetCamRot(cam, GetGameplayCamRot(2), 2)
-	RenderScriptCams( 1, 1, 0, 0, 0)
-	RenderScriptCams( 0, 1, 1000, 0, 0)
 	SetCamActive(gameplaycam, true)
-	SetCamActive(cam, false)
-	DestroyCam(cam, true)
 	DisplayHud(true)
 	DisplayRadar(true)
 	
+	Citizen.InvokeNative(0x50C803A4CD5932C5, true)
+    Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 0, 100)
+    Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 1, 100)
+	
+	timerCount = reviveWait
+	
+	if Config.UsingInventory then
+		TriggerServerEvent("player:getItems", source)
 	end
-	TriggerEvent("initializeVoip")
+	
+	if Config.UsingClothes then
+		LoadClothes()
+	end
+	if new_character == 1 then
+		TriggerEvent("redemrp_skin:openCreator")
+		new_character = 0
+	else
+	
+	end
+	
+	--TriggerEvent("initializeVoip")
 end)
---=============================================================-- DRAW TEXT SECTION --=============================================================--
---lupo
-function DrawTxt(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
-    local str = CreateVarString(10, "LITERAL_STRING", str)
-    SetTextScale(w, h)
-    SetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
-	SetTextCentre(centre)
-    if enableShadow then SetTextDropshadow(1, 0, 0, 0, 255) end
-	Citizen.InvokeNative(0xADA9255D, 1);
-    DisplayText(str, x, y)
-end
 
-function CreateVarString(p0, p1, variadic)
-    return Citizen.InvokeNative(0xFA925AC00EB830B9, p0, p1, variadic, Citizen.ResultAsLong())
-end
------------------------------------------------------------------------------------------NUI-------------------------------------------------------------
+
+Citizen.CreateThread(function()
+    while true do
+        if isDead then
+			timerCount = timerCount - 1
+        end
+        Citizen.Wait(1000)          
+    end
+end)
+
+--lupo
+
+RegisterNetEvent("redemrp_respawn:respawn")
+AddEventHandler("redemrp_respawn:respawn", function(new1)
+	local new = new1
+	new_character = tonumber(new)
+	respawn()
+end)
+
+RegisterNetEvent("redemrp_respawn:respawnCoords")
+AddEventHandler("redemrp_respawn:respawnCoords", function(coords)
+	local ped = PlayerPedId()
+	SetEntityCoords(ped, coords.x, coords.y, coords.z)
+	SetNuiFocus(false, false)
+	SendNUIMessage({
+		type = 1,
+		showMap = false
+	})
+	FreezeEntityPosition(ped, false)
+
+	ShutdownLoadingScreen()
+	NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, 59.95, true, true, false)
+	local ped = PlayerPedId()
+	SetEntityCoordsNoOffset(ped, coords.x, coords.y, coords.z, false, false, false, true)
+	ClearPedTasksImmediately(ped)
+	ClearPlayerWantedLevel(PlayerId())
+	FreezeEntityPosition(ped, false)
+	SetPlayerInvincible(PlayerId(), false)
+	SetEntityVisible(ped, true)
+	SetEntityCollision(ped, true)
+	TriggerEvent('playerSpawned')
+	Citizen.InvokeNative(0xF808475FA571D823, true)
+	NetworkSetFriendlyFireOption(true)
+
+	TriggerEvent("redemrp_respawn:camera", coords)
+
+	alive = true
+	TriggerServerEvent("redemrp_respawn:registerCoords", coords)
+end)
+
 RegisterNUICallback('select', function(spawn, cb)
-	print(spawn)
-	print('What tha hek is this ?')
 	local coords = Config[spawn][math.random(#Config[spawn])]
 	local ped = PlayerPedId()
 	SetEntityCoords(ped, coords.x, coords.y, coords.z)
@@ -426,7 +200,7 @@ RegisterNUICallback('select', function(spawn, cb)
 		showMap = false
 	})
 	FreezeEntityPosition(ped, false)
-	
+
 	ShutdownLoadingScreen()
 	NetworkResurrectLocalPlayer(coords.x, coords.y, coords.z, 59.95, true, true, false)
 	local ped = PlayerPedId()
@@ -440,31 +214,74 @@ RegisterNUICallback('select', function(spawn, cb)
 	TriggerEvent('playerSpawned', spawn)
 	Citizen.InvokeNative(0xF808475FA571D823, true)
 	NetworkSetFriendlyFireOption(true)
+
+	TriggerEvent("redemrp_respawn:camera", coords)
 	
-	SetCamActive(gameplaycam, true)
-	DisplayHud(true)
-	DisplayRadar(true)
-	--TriggerEvent("redemrp_respawn:newcamera", coords)
-	if Config.UsingInventory then
-		TriggerServerEvent("player:getItems", source)
-	else end
 	if new_character == 1 then
 		TriggerEvent("redemrp_skin:openCreator")
 		print("new character")
 		new_character = 0
-	else
-	TriggerServerEvent("redemrp_skin:loadSkin", function(cb)
-		end)
-		if Config.UsingClothes then
-			LoadClothes()
-		else end
+	end
+	
+	alive = true
+	TriggerServerEvent("redemrp_respawn:registerCoords", coords)
+end)
+
+Citizen.CreateThread(function()
+	while true do
+		Wait(20000)
+
+		if alive then
+			local coords = GetEntityCoords(PlayerPedId())
+			TriggerServerEvent("redemrp_respawn:registerCoords", {x = coords.x, y = coords.y, z = coords.z})
+		end
 	end
 end)
 
-function LoadClothes()
-	Citizen.CreateThread(function()
-		Citizen.Wait(3000)
-		--TriggerServerEvent("redemrp_clothing:loadClothes", 1, function(cb)
-		--end)
-	end)
+RegisterNetEvent('redemrp_respawn:camera')
+AddEventHandler('redemrp_respawn:camera', function(cord)
+	DoScreenFadeIn(500)
+	local coords = cord
+	cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", 621.67,374.08,873.24, 300.00,0.00,0.00, 100.00, false, 0) -- CAMERA COORDS
+	PointCamAtCoord(cam, coords.x,coords.y,coords.z+200)
+    SetCamActive(cam, true)
+    RenderScriptCams(true, false, 1, true, true)
+	DoScreenFadeIn(500)
+	Citizen.Wait(500)
+	
+	cam3 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z+200, 300.00,0.00,0.00, 100.00, false, 0)
+    PointCamAtCoord(cam3, coords.x,coords.y,coords.z+200)
+    SetCamActiveWithInterp(cam3, cam, 3700, true, true)
+    Citizen.Wait(3700)
+	
+	cam2 = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", coords.x,coords.y,coords.z+200, 300.00,0.00,0.00, 100.00, false, 0)
+	PointCamAtCoord(cam2, coords.x,coords.y,coords.z+2)
+	SetCamActiveWithInterp(cam2, cam3, 3700, true, true)
+	RenderScriptCams(false, true, 500, true, true)
+	Citizen.Wait(500)
+    SetCamActive(cam, false)
+    DestroyCam(cam, true)
+	DestroyCam(cam2, true)
+	DestroyCam(cam3, true)
+	DisplayHud(true)
+    DisplayRadar(true)
+	Citizen.Wait(3000)
+	
+end)
+--=============================================================-- DRAW TEXT SECTION--=============================================================--
+function DrawTxt(str, x, y, w, h, enableShadow, col1, col2, col3, a, centre)
+    local str = CreateVarString(10, "LITERAL_STRING", str)
+
+
+    --Citizen.InvokeNative(0x66E0276CC5F6B9DA, 2)
+    SetTextScale(w, h)
+    SetTextColor(math.floor(col1), math.floor(col2), math.floor(col3), math.floor(a))
+	SetTextCentre(centre)
+    if enableShadow then SetTextDropshadow(1, 0, 0, 0, 255) end
+	Citizen.InvokeNative(0xADA9255D, 1);
+    DisplayText(str, x, y)
+end
+
+function CreateVarString(p0, p1, variadic)
+    return Citizen.InvokeNative(0xFA925AC00EB830B9, p0, p1, variadic, Citizen.ResultAsLong())
 end

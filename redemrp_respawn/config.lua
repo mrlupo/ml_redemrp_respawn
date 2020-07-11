@@ -1,37 +1,18 @@
 Config = {}
-
-Config.RespawnTime = 60000
+Config.RespawnTime = 30000
 Config.LocaleDead = "You are dying!"
+Config.LocaleTimer = "Respawning in"
 Config.LocaleRevive = "You are dead. (R) to Respawn."
-Config.LocaleTimer = "Respawning in 60 seconds"
+Config.PressRespawn = "Press E to respawn"
 Config.Timecycle = "CrossLine01" --Set the timecycle effect for a death
 Config.TimecycleStrenght = 1.0
 Config.RespawnCommand = true
 Config.kysCommand = true
-Config.revCommand = true
-Config.UsingClothes = false -- If you are using RedEM-RP Clothing, set this to 'true' otherwise, keep it false (https://github.com/RedEM-RP/redemrp_clothing)
 Config.UsingInventory = true -- If you are using RedEM-RP Inventory, set this to 'true' otherwise, keep it false (https://github.com/RedEM-RP/redemrp_inventory)
 
----------------------------------------------------Start of Single Spawn-----------------------------------------------------------------
-
-Config.UseSingleSpawn = true -- If you want to disable the use of RedEm-respawn multi spawn function and use a single spawn.
-Config.SingleSpawnUseLightning = false --Add a litle Lightning spark on player respawn
-Config.SaveCoords = true -- if you want to use auto Saved coords 
-Config.SaveDelay = 120000 --Delay between Db Coords Save (5 minutes default) changed to 2 minutes duck (database should handle it fine with multiple players)
-                
-Config.SingleFirstSpawn = {x=-170.72,y=636.30,z=113.08} -- Set the coords for the First ever spawnpoint.
-Config.SingleRespawnSpawn = {x=-173.03,y=638.60,z=113.08} -- Use Only if you are using single spawn.
-Config.SingleSpawnHeading = 65.6 -- Heading of the single respawn point.
-Config.SingleSpawnCam = {x=-799.06,y=-1203.41,z=900.76} --Changes the camera location when respawning
-Config.LightningCoords = {x=2743.46,y=-1265.6,z=99.26} -- Coords of the Lightning
-
---------------------------------------------------End of Single Spawn---------------------------------------------------------------------
-
-
 Config.Spawnpoints = { -- TEMPORARY
-   {x=205.73,y=118.26,z=99.28},
+    {x=205.73,y=118.26,z=99.28},
     {x=211.18,y=161.95,z=97.42},
-
 }
 
 Config.Valentine={
